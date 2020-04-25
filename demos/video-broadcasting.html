@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="utf-8">
+  <title>Video OneWay Broadcasting using RTCMultiConnection</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+  <link rel="shortcut icon" href="/demos/logo.png">
+  <link rel="stylesheet" href="/demos/stylesheet.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+  <script src="/demos/menu.js"></script>
+
+  <style>
+
+    @import url('https://fonts.googleapis.com/css?family=Abel');
+
+html, body {
+  background: #FCEEB5;
+  font-family: Abel, Arial, Verdana, sans-serif;
+}
+
+.center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%);
+}
+
+nav{
+  margin-top:0px;
+}
+
+
+  </style>
+
+</head>
+
+<body>
+  <!-- <header>
+    <a class="logo" href="/"><img src="/demos/logo.png" alt="RTCMultiConnection"></a>
+    <a href="/" class="menu-explorer">Menu<img src="/demos/menu-icon.png" alt="Menu"></a>
+    <nav>
+      <li>
+        <a href="/">Home</a>
+      </li>
+      <li>
+        <a href="/demos/">Demos</a>
+      </li>
+      <li>
+        <a href="https://www.rtcmulticonnection.org/docs/getting-started/">Getting Started</a>
+      </li>
+      <li>
+        <a href="https://www.rtcmulticonnection.org/FAQ/">FAQ</a>
+      </li>
+      <li>
+        <a href="https://www.youtube.com/playlist?list=PLPRQUXAnRydKdyun-vjKPMrySoow2N4tl">YouTube</a>
+      </li>
+      <li>
+        <a href="https://github.com/muaz-khan/RTCMultiConnection/wiki">Wiki</a>
+      </li>
+      <li>
+        <a href="https://github.com/muaz-khan/RTCMultiConnection">Github</a>
+      </li>
+    </nav>
+  </header> -->
+
+  <!-- <h1>
+    Video OneWay Broadcasting using RTCMultiConnection
+    <p class="no-mobile">
+      Multi-user (one-to-many) video broadcasting using star topology.
+    </p>
+  </h1> -->
+
+
+<nav class="navbar navbar-expand-sm bg-dark" style="width:100%">
+
+  <!-- Links -->
+  <ul class="navbar-nav">
+    <li class="nav-item">
+      <span style="width:50px ;height:220px; background-color: lightblue;border-radius: 3px;color:black;box-shadow: 3px 5px #888888;" >&nbsp; Name :&nbsp; </span><span class="label label-primary" >&nbsp;</span> <input type="text" style="border:1px solid #888888;border-radius: 3px;height:40px;box-shadow: 2px 3px #888888;color:#0201FF;" id="room-id" value="abcdef" autocorrect=off autocapitalize=off size=20><span> &nbsp; &nbsp; &nbsp;</span>
+   
+   
+     <button id="open-room">Go Live..</button><span> &nbsp;</span>
+    
+    
+      <button id="join-room">End Live</button><span> &nbsp;</span>
+    
+  </ul>
+
+</nav>
+  
+  
+    
+    
+    <!-- <button id="join-room">Join Room</button>
+    <button id="open-or-join-room">Auto Open Or Join Room</button> -->
+<section class="make-center">
+    <div id="videos-container" style="margin: 30px 0px;" ></div>
+
+    <div id="room-urls"
+      style="text-align: center;display: none;background: #F1EDED;margin: 15px -10px;border: 1px solid rgb(189, 189, 189);border-left: 0;border-right: 0;">
+    </div>
+  </section>
+  <section class="make-center" id="sec1">
+    <textarea name="ta" id="ta1"  style="width:40%;color:#0201FF;border:1px solid #888888;border-radius: 5px;box-shadow: 3px 5px #888888;" placeholder="Description about place......"></textarea>
+  </section>
+
+  <script src="/dist/RTCMultiConnection.js"></script>
+  <script src="/node_modules/webrtc-adapter/out/adapter.js"></script>
+  <script src="/node_modules/recordrtc/RecordRTC.js"> </script>
+  <script src="/socket.io/socket.io.js"></script>
+
+  <!-- custom layout for HTML5 audio/video elements -->
+  <link rel="stylesheet" href="/dev/getHTMLMediaElement.css">
+  <script src="/dev/getHTMLMediaElement.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <script>
+    // ......................................................
+    // .......................UI Code........................
+    // ......................................................
+    var tags;
+    var desc;
+    $.ajax({
+      url: "https://geolocation-db.com/jsonp",
+      jsonpCallback: "callback",
+      dataType: "jsonp",
+      success: function (location) {
+        // console.log(location);
+        tags = location;
+      }
+    });
+
+    document.getElementById('open-room').onclick = function () {
+      desc = document.getElementById("ta1").value;
+      disableInputButtons();
+      connection.open(desc, tags, document.getElementById('room-id').value, function () {
+        // showRoomURL(connection.sessionid);
+      });
+    };
+
+    // document.getElementById('join-room').onclick = function() {
+    //     disableInputButtons();
+
+    //     connection.sdpConstraints.mandatory = {
+    //         OfferToReceiveAudio: true,
+    //         OfferToReceiveVideo: true
+    //     };
+    //     connection.join(document.getElementById('room-id').value);
+    // };
+
+    // document.getElementById('open-or-join-room').onclick = function() {
+    //     disableInputButtons();
+    //     connection.openOrJoin(document.getElementById('room-id').value, function(isRoomExist, roomid) {
+    //         if (isRoomExist === false && connection.isInitiator === true) {
+    //             // if room doesn't exist, it means that current user will create the room
+    //             showRoomURL(roomid);
+    //         }
+
+    //         if(isRoomExist) {
+    //           connection.sdpConstraints.mandatory = {
+    //               OfferToReceiveAudio: true,
+    //               OfferToReceiveVideo: true
+    //           };
+    //         }
+    //     });
+    // };
+
+    // ......................................................
+    // ..................RTCMultiConnection Code.............
+    // ......................................................
+    var recorder;
+    var connection = new RTCMultiConnection();
+
+    // by default, socket.io server is assumed to be deployed on your own URL
+    connection.socketURL = '/';
+
+    // comment-out below line if you do not have your own socket.io server
+    // connection.socketURL = 'https://rtcmulticonnection.herokuapp.com:443/';
+
+    connection.socketMessageEvent = 'video-broadcast-demo';
+
+    connection.session = {
+      audio: true,
+      video: true,
+      oneway: true
+    };
+
+    connection.sdpConstraints.mandatory = {
+      OfferToReceiveAudio: false,
+      OfferToReceiveVideo: false
+    };
+
+    // https://www.rtcmulticonnection.org/docs/iceServers/
+    // use your own TURN-server here!
+    connection.iceServers = [{
+      'urls': [
+        'stun:stun.l.google.com:19302',
+        'stun:stun1.l.google.com:19302',
+        'stun:stun2.l.google.com:19302',
+        'stun:stun.l.google.com:19302?transport=udp',
+      ]
+    }];
+
+    connection.videosContainer = document.getElementById('videos-container');
+    connection.onstream = function (event) {
+      var existing = document.getElementById(event.streamid);
+      if (existing && existing.parentNode) {
+        existing.parentNode.removeChild(existing);
+      }
+
+      event.mediaElement.removeAttribute('src');
+      event.mediaElement.removeAttribute('srcObject');
+      event.mediaElement.muted = true;
+      event.mediaElement.volume = 0;
+
+
+      recorder = RecordRTC(event.stream, {
+        type: 'video/mp4'
+      });
+
+      recorder.startRecording();
+
+      var video = document.createElement('video');
+
+      try {
+        video.setAttributeNode(document.createAttribute('autoplay'));
+        video.setAttributeNode(document.createAttribute('playsinline'));
+        
+
+      } catch (e) {
+        video.setAttribute('autoplay', true);
+        video.setAttribute('playsinline', true);
+      }
+
+      if (event.type === 'local') {
+        video.volume = 0;
+        try {
+          video.setAttributeNode(document.createAttribute('muted'));
+        } catch (e) {
+          video.setAttribute('muted', true);
+        }
+      }
+      video.srcObject = event.stream;
+
+      var width = parseInt(7*connection.videosContainer.clientWidth/13 ) ;
+      var mediaElement = getHTMLMediaElement(video, {
+        //title: event.userid,
+        buttons: ['full-screen'],
+        width: width,
+        showOnMouseEnter: false
+      });
+
+      connection.videosContainer.appendChild(mediaElement);
+
+      setTimeout(function () {
+        mediaElement.media.play();
+      }, 5000);
+
+      mediaElement.id = event.streamid;
+    };
+
+    connection.onstreamended = function (event) {
+      var mediaElement = document.getElementById(event.streamid);
+      if (mediaElement) {
+        mediaElement.parentNode.removeChild(mediaElement);
+
+        if (event.userid === connection.sessionid && !connection.isInitiator) {
+          alert('Broadcast is ended. We will reload this page to clear the cache.');
+          location.reload();
+        }
+      }
+    };
+
+    connection.onMediaError = function (e) {
+      if (e.message === 'Concurrent mic process limit.') {
+        if (DetectRTC.audioInputDevices.length <= 1) {
+          alert('Please select external microphone. Check github issue number 483.');
+          return;
+        }
+
+        var secondaryMic = DetectRTC.audioInputDevices[1].deviceId;
+        connection.mediaConstraints.audio = {
+          deviceId: secondaryMic
+        };
+
+        connection.join(connection.sessionid);
+      }
+    };
+
+    // ..................................
+    // ALL below scripts are redundant!!!
+    // ..................................
+
+    function disableInputButtons() {
+      document.getElementById('room-id').onkeyup();
+      document.getElementById('sec1').remove();
+      //document.getElementById('open-or-join-room').disabled = true;
+      document.getElementById('open-room').disabled = true;
+      //document.getElementById('join-room').disabled = true;
+      document.getElementById('room-id').disabled = true;
+    }
+
+
+    document.getElementById('join-room').onclick = function () {
+      recorder.stopRecording(postFiles);
+      location.replace('/home/');
+    }
+
+
+    function postFiles() {
+      var blob = recorder.getBlob();
+      //console.log(blob);
+
+      //var fileName = 'abc.mp4';
+      var fileName;
+      if(desc.length==0)
+      {
+        fileName = tags.latitude.toString()+"$"+tags.longitude.toString()+"$"+tags.city+"$.mp4";
+      }
+      else
+      {
+        var r=desc.split(" ");
+        var r1=desc;
+        var i;
+        for(i=0;i<r1.length-1;i++)
+        {
+          r1=r1.replace(" ","_");
+        }
+        fileName = tags.latitude.toString()+"$"+tags.longitude.toString()+"$"+r1+"$.mp4"
+      }
+
+      var file = new File([blob], fileName, {
+        // type: 'video/webm'
+        type: 'video/mp4'
+      });
+
+      xhr('/uploadFile', file, function (responseText) {
+        var fileURL = JSON.parse(responseText).fileURL;
+
+        // console.info('fileURL', fileURL);
+        // videoElement.src = fileURL;
+        // videoElement.play();
+        // videoElement.muted = false;
+        // videoElement.controls = true;
+
+        // document.querySelector('#footer-h2').innerHTML = '<a href="' + videoElement.src + '">' + videoElement.src + '</a>';
+        //document.querySelector('#footer-h2').innerHTML = '<a href="C:\UsersDELL\Desktop\RecordRTC-master\RecordRTC-to-Nodejs\\uploads\\upload_dbfc20133058924b13aef4a2e806ebfa.mp4">' + videoElement.src + '</a>';
+      });
+
+      //if (mediaStream) mediaStream.stop();
+    }
+
+    // XHR2/FormData
+    function xhr(url, data, callback) {
+      var request = new XMLHttpRequest();
+      request.onreadystatechange = function () {
+        if (request.readyState == 4 && request.status == 200) {
+          callback(request.responseText);
+        }
+      };
+
+      request.open('POST', url);
+
+      var formData = new FormData();
+      formData.append('file', data);
+      request.send(formData);
+    }
+
+
+    // ......................................................
+    // ......................Handling Room-ID................
+    // ......................................................
+
+    function showRoomURL(roomid) {
+      var roomHashURL = '#' + roomid;
+      var roomQueryStringURL = '?roomid=' + roomid;
+
+      var html = '<h2>Unique URL for your room:</h2><br>';
+
+      html += 'Hash URL: <a href="' + roomHashURL + '" target="_blank">' + roomHashURL + '</a>';
+      html += '<br>';
+      html += 'QueryString URL: <a href="' + roomQueryStringURL + '" target="_blank">' + roomQueryStringURL + '</a>';
+
+      var roomURLsDiv = document.getElementById('room-urls');
+      roomURLsDiv.innerHTML = html;
+
+      roomURLsDiv.style.display = 'block';
+    }
+
+    (function () {
+      var params = {},
+        r = /([^&=]+)=?([^&]*)/g;
+
+      function d(s) {
+        return decodeURIComponent(s.replace(/\+/g, ' '));
+      }
+      var match, search = window.location.search;
+      while (match = r.exec(search.substring(1)))
+        params[d(match[1])] = d(match[2]);
+      window.params = params;
+    })();
+
+    var roomid = '';
+    if (localStorage.getItem(connection.socketMessageEvent)) {
+      roomid = localStorage.getItem(connection.socketMessageEvent);
+    } else {
+      roomid = connection.token();
+    }
+    document.getElementById('room-id').value = roomid;
+    document.getElementById('room-id').onkeyup = function () {
+      localStorage.setItem(connection.socketMessageEvent, document.getElementById('room-id').value);
+    };
+
+    var hashString = location.hash.replace('#', '');
+    if (hashString.length && hashString.indexOf('comment-') == 0) {
+      hashString = '';
+    }
+
+    var roomid = params.roomid;
+    if (!roomid && hashString.length) {
+      roomid = hashString;
+    }
+
+    if (roomid && roomid.length) {
+      document.getElementById('room-id').value = roomid;
+      localStorage.setItem(connection.socketMessageEvent, roomid);
+
+      // auto-join-room
+      (function reCheckRoomPresence() {
+        connection.checkPresence(roomid, function (isRoomExist) {
+          if (isRoomExist) {
+            connection.join(roomid);
+            return;
+          }
+
+          setTimeout(reCheckRoomPresence, 5000);
+        });
+      })();
+
+      disableInputButtons();
+    }
+
+    // detect 2G
+    if (navigator.connection &&
+      navigator.connection.type === 'cellular' &&
+      navigator.connection.downlinkMax <= 0.115) {
+      alert('2G is not supported. Please use a better internet service.');
+    }
+  </script>
+
+  <footer>
+    <small id="send-message"></small>
+  </footer>
+
+  <script src="https://www.webrtc-experiment.com/common.js"></script>
+</body>
+
+</html>

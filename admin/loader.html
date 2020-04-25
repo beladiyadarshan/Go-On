@@ -1,0 +1,827 @@
+<!-- Demo version: 2018.11.17 -->
+
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+ 
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Streams</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+  <link rel="shortcut icon" href="/demos/logo.png">
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+  <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
+  <link href="/demos/css/bootstrap.min.css" rel="stylesheet">
+  <script src="/demos/js/jquery-3.3.1.slim.min.js"></script>
+  <script src="/demos/js/popper.min.js"></script>
+  <script src="/demos/js/bootstrap.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="/dist/RTCMultiConnection.js"></script>
+<script src="/node_modules/webrtc-adapter/out/adapter.js"></script>
+
+
+<!-- custom layout for HTML5 audio/video elements -->
+<link rel="stylesheet" href="/dev/getHTMLMediaElement.css">
+
+<script src="/dev/getHTMLMediaElement.js"></script>
+
+<style type="text/css">
+
+
+html, body, section, ul, li, a, h1, h2 {
+    padding: 0;
+    margin: 0;
+    outline: none;
+    text-shadow: none;
+    box-shadow: none;
+    border-radius: 0;
+    text-decoration: none;
+}
+
+
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-size: 17px;
+    line-height: 1em;
+    height: 100vh;
+    width: 100vw;
+
+}
+
+header {
+  border-bottom: 1px solid #95d4e7;
+  height: 70px;
+}
+
+a {
+    color: #EC008C;
+}
+
+a:hover {
+    color: #671345;
+}
+
+.logo {
+    float: left;
+    margin-left: 20px;
+    display: block;
+    height: 55px;
+}
+
+.kitten {
+  margin: 50px;
+  max-height: 200px;
+  transition: 0.2s all cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.kitten:hover {
+  transform: scale(1.2);
+  transition: 0.2s all cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 30px 30px rgba(0, 0, 0, 0.5);
+}
+
+
+
+.kitten:hover:before {
+  opacity: 1;
+}
+
+.kitten:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    box-shadow: 0 30px 30px rgba(0, 0, 0, 0.5);
+    transition: .15s all ease-out;
+    opacity: 0;
+    border-radius: 5px;
+}
+
+.logo-text {
+    font-size: 24px;
+    display: inline-block;
+    margin-top: 15px;
+    margin-left: 9px;
+    font-weight: bold;
+    color: #0194ff;
+}
+
+section {
+  border-bottom: 1px solid #95d4e7;
+  padding: 5px 20px;
+}
+
+.table {
+  overflow: auto;
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 1rem;
+  border-left: 1px solid #eceeef;
+  border-bottom: 1px solid #eceeef;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem;
+  vertical-align: top;
+  border-top: 1px solid #eceeef;
+  border-right: 1px solid #eceeef;
+}
+
+.table thead th {
+  vertical-align: bottom;
+  border-bottom: 2px solid #eceeef;
+}
+
+.table tbody + tbody {
+  border-top: 2px solid #eceeef;
+}
+
+.table .table {
+  background-color: #fff;
+}
+
+.table-sm th,
+.table-sm td {
+  padding: 0.3rem;
+}
+
+.table-bordered {
+  border: 1px solid #eceeef;
+}
+
+.table-bordered th,
+.table-bordered td {
+  border: 1px solid #eceeef;
+}
+
+.table-bordered thead th,
+.table-bordered thead td {
+  border-bottom-width: 2px;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.075);
+}
+
+.table-active,
+.table-active > th,
+.table-active > td {
+  background-color: rgba(0, 0, 0, 0.075);
+}
+
+.table-hover .table-active:hover {
+  background-color: rgba(0, 0, 0, 0.075);
+}
+
+.table-hover .table-active:hover > td,
+.table-hover .table-active:hover > th {
+  background-color: rgba(0, 0, 0, 0.075);
+}
+
+.table-success,
+.table-success > th,
+.table-success > td {
+  background-color: #dff0d8;
+}
+
+.table-hover .table-success:hover {
+  background-color: #d0e9c6;
+}
+
+.table-hover .table-success:hover > td,
+.table-hover .table-success:hover > th {
+  background-color: #d0e9c6;
+}
+
+.table-info,
+.table-info > th,
+.table-info > td {
+  background-color: #d9edf7;
+}
+
+.table-hover .table-info:hover {
+  background-color: #c4e3f3;
+}
+
+.table-hover .table-info:hover > td,
+.table-hover .table-info:hover > th {
+  background-color: #c4e3f3;
+}
+
+.table-warning,
+.table-warning > th,
+.table-warning > td {
+  background-color: #fcf8e3;
+}
+
+.table-hover .table-warning:hover {
+  background-color: #faf2cc;
+}
+
+.table-hover .table-warning:hover > td,
+.table-hover .table-warning:hover > th {
+  background-color: #faf2cc;
+}
+
+.table-danger,
+.table-danger > th,
+.table-danger > td {
+  background-color: #f2dede;
+}
+
+.table-hover .table-danger:hover {
+  background-color: #ebcccc;
+}
+
+.table-hover .table-danger:hover > td,
+.table-hover .table-danger:hover > th {
+  background-color: #ebcccc;
+}
+
+.thead-inverse th {
+  color: #fff;
+  background-color: #292b2c;
+}
+
+.thead-default th {
+  color: #464a4c;
+  background-color: #eceeef;
+}
+
+.table-inverse {
+  color: #fff;
+  background-color: #292b2c;
+}
+
+.table-inverse th,
+.table-inverse td,
+.table-inverse thead th {
+  border-color: #fff;
+}
+
+.table-inverse.table-bordered {
+  border: 0;
+}
+
+.table-responsive {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  -ms-overflow-style: -ms-autohiding-scrollbar;
+}
+
+.table-responsive.table-bordered {
+  border: 0;
+}
+
+.clickable {
+  border-bottom: 1px dotted blue;
+  padding-bottom: 2px;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.tab {
+  display: inline-block;
+  width: 20px;
+}
+
+header div .top-span, header div button {
+  display: inline-block!important;
+  margin-right: 25px;
+  padding: 2px 8px;
+  font-size: 14px;
+}
+
+#logs-viewer {
+  height: 400px;
+  overflow: auto;
+  padding: 0;
+  border: 0;
+}
+
+#logs-viewer tr:first-child td {
+  border-top: 0;
+}
+
+pre {
+  margin: 0;
+  padding: 0;
+}
+
+input[disabled], button[disabled] {
+  background: transparent!important;
+  color: #dcd7d7!important;
+  border-color: #dcd7d7!important;
+  cursor: not-allowed!important;
+}
+
+.max-width {
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.new-updates-notifier {
+  text-align: center;
+  display: none;
+}
+
+.new-updates-notifier span {
+    background: yellow;
+    display: inline-block;
+    border: 1px solid red;
+    padding: 5px 22px;
+    border-top: 0;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+.new-updates-notifier a {
+  border-bottom: 1px dotted;
+  text-decoration: none!important;
+}
+
+.new-updates-notifier label {
+  margin: 0 5px;
+  color: #EC008C;
+  border-bottom: 1px dotted;
+  cursor: pointer;
+}
+
+.new-updates-notifier input {
+    vertical-align: middle;
+}
+
+@import url('https://fonts.googleapis.com/css?family=Abel');
+
+html, body {
+  background: #FCEEB5;
+  font-family: Abel, Arial, Verdana, sans-serif;
+}
+
+.center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%);
+}
+
+.card {
+  width: 100%;
+  height: 22vh;
+  background-color: #fff;
+  background: linear-gradient(#f8f8f8, #fff);
+  box-shadow: 0 8px 16px -8px rgba(0,0,0,0.4);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 2 em;
+}
+
+.card h1 {
+  text-align: center;
+}
+
+.card .additional {
+  position: absolute;
+  width: 20vw;
+  height: 100%;
+  background: linear-gradient(#dE685E, #EE786E);
+  transition: width 0.4s;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.card.green .additional {
+  background: linear-gradient(#92bCa6, #A2CCB6);
+}
+
+
+.card:hover .additional {
+  width: 100%;
+  border-radius: 0 5px 5px 0;
+}
+
+.card .additional .user-card {
+  width: 20vw;
+  height: 100%;
+  position: relative;
+  float: left;
+}
+
+.card .additional .user-card::after {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 10%;
+  right: -2px;
+  height: 80%;
+  border-left: 2px solid rgba(0,0,0,0.025);*/
+}
+
+.card>span{
+  font-size: 16px;
+}
+.card .additional .user-card .level,
+.card .additional .user-card .points {
+  top: 15%;
+  color: #fff;
+  text-transform: uppercase;
+  font-size: 0.75em;
+  font-weight: bold;
+  background: rgba(0,0,0,0.15);
+  padding: 0.125rem 0.75rem;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+
+.card .additional .user-card .points {
+  top: 85%;
+}
+
+.card .additional .user-card svg {
+  top: 50%;
+}
+
+.card .additional .more-info {
+  width: 100vw;
+  float: left;
+  position: absolute;
+  left: 20vw;
+  height: 100%;
+}
+
+.card .additional .more-info h1 {
+  color: red;
+  margin-right: 35vw;
+
+}
+
+.card.green .additional .more-info h1 {
+  color: #224C36;
+}
+
+.card .additional .coords {
+  margin: 0 1rem;
+  color: #fff;
+  font-size: 1rem;
+}
+
+.card.green .additional .coords {
+  color: #325C46;
+}
+
+.card .additional .coords span + span {
+  float: right;
+}
+
+.card .additional .stats {
+  font-size: 2rem;
+  display: flex;
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  right: 1rem;
+  top: auto;
+  color: #fff;
+}
+
+.card.green .additional .stats {
+  color: #325C46;
+}
+
+.card .additional .stats > div {
+  flex: 1;
+  text-align: center;
+}
+
+.card .additional .stats i {
+  display: block;
+}
+
+.card .additional .stats div.title {
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.card .additional .stats div.value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  line-height: 1.5rem;
+}
+
+.card .additional .stats div.value.infinity {
+  font-size: 2.5rem;
+}
+
+.card .general {
+  width: 100vw;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+  box-sizing: border-box;
+  padding: 1rem;
+  padding-top: 0;
+}
+
+.card .general .more {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  font-size: 0.6em;
+}
+
+
+
+</style>
+<script>
+$.ajax({
+      url: "https://geolocation-db.com/jsonp",
+      jsonpCallback: "callback",
+      dataType: "jsonp",
+      success: function (location) {
+        // console.log(location);
+        tags = location;
+      }
+    });
+
+jQuery(function(){
+   jQuery('#btn-validate-admin').click();
+
+//     var file1;
+// console.log("1111");
+//    xhr('/showd', file1, function (responseText) {
+//         var files = JSON.parse(responseText).file;
+//       console.log("1111");
+//         files.forEach(function (file) {
+//            //// Do whatever you want to do with the file
+//             console.log(file);
+//             //html+='<a href=/uploads/"'+file+'">'+file+'</a>';
+//         });
+//       });
+
+//     console.log("2222");  
+});
+
+// function xhr(url, data, callback) {
+//       var request = new XMLHttpRequest();
+//       request.onreadystatechange = function () {
+//         if (request.readyState == 4 && request.status == 200) {
+//           callback(request.responseText);
+//         }
+//       };
+
+//     }
+
+// $(document).ready(function() {
+//     $.ajax({
+//         url: 'http://localhost:9001/showd',
+//         dataType: "json",
+//         type: 'GET',
+//         jsonpCallback: 'callback', // this is not relevant to the POST anymore
+//         success: function (data) {
+//             var ret = jQuery.parseJSON(data);
+//             //$('#lblResponse').html(ret.msg);
+//             console.log('Success: '+ret.file)
+//         },
+//         error: function (xhr, status, error) {
+//             console.log('Error: ' + error.message);
+//             //$('#lblResponse').html('Error connecting to the server.');
+//         },
+//     });
+// });
+
+
+
+
+
+</script>
+</head>
+<body>
+  <nav class="navbar navbar-expand-sm bg-dark" style="width:100%">
+
+  <!-- Links -->
+  <ul class="navbar-nav">
+    <li class="nav-item">
+      <input type="text" id="query" class="rounded"> <button id="search" class="btn btn-primary " style="margin:0px 5px 5px">Search</button><span id="xy"></span>
+    </li>
+    <li class="nav-item">
+      <a href="/demos/Video-Broadcasting.html" class="btn btn-info btn-danger" role="button" target="_blank"  style="margin:0px 5px 5px;width:200px;">Go Live....</a> 
+    </li>
+    <li class="nav-item">
+      <button id="showl1" onclick="document.getElementById('id01').style.display='block'" class="btn btn-primary "  style="">Thumbnails</button>
+    </li>
+  </ul>
+
+</nav>
+
+  <div class="new-updates-notifier">
+    <span>There are new updates. Do you want to refresh? <label><input type="checkbox"> auto update</label> or <a href="">Refresh</a></span>
+  </div>
+  
+
+
+
+
+
+
+  <div id="id01" class="w3-modal ">
+    <div class="w3-modal-content w3-card-50 rounded">
+
+      <header class="w3-container w3-black"> 
+        <span onclick="document.getElementById('id01').style.display='none'" 
+        class="w3-button w3-display-topright">&times;</span>
+        <div style="height:8px;"></div>
+        <h1>Thumbnails<h1>
+      </header>
+      <div class="w3-container">
+        <div id="show-list"></div>
+      </div>
+      <hr>
+    </div>
+  </div>
+
+
+
+
+
+
+
+  <script>
+// Get the modal
+var modal = document.getElementById('id01');
+
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function(event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+}
+</script>
+
+
+  <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Logs Viewer</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body" style="padding: 0;">
+          <section id="logs-viewer"></section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Get User Information</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="form-group">
+              <label for="txt-userid" class="col-form-label">Enter User ID:</label>
+              <input type="text" class="form-control" id="txt-userid" placeholder="Enter user-id">
+            </div>
+          </form>
+        </div>
+
+
+        <div class="modal-footer">
+          <button type="button" class="btn" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="view-userinfo">Search</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="confirm-box-topper" style="display:none;z-index:99999999;top:0;left:0;
+        bottom:0;right:0;width:100%;height:100%;position:fixed;background:#000000ad;"></div>
+  <div id="alert-box" class="modal fade" style="display:none;z-index:999999999999999;">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="alert-title">Alert</h5>
+                        <button type="button" class="close btn-alert-close" data-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="alert-message" class="model-list"></div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <p id="alert-special"></p>
+                        <button class="btn btn-primary btn-alert-close">Close</button>
+                    </div>
+                </div>
+            </div>
+  </div>
+
+  <div id="confirm-box" class="modal fade" style="display:none;z-index:999999999999999;">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="confirm-title">Please Confirm</h5>
+                        <button type="button" class="close btn-confirm-close" data-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div id="confirm-message" class="modal-body"></div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-confirm-close" id="btn-confirm-close">Cancel</button>
+                        <button class="btn btn-primary" id="btn-confirm-action">Confirm</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+  <div class="modal fade" id="adminPasswordModel" tabindex="-1" role="dialog" aria-labelledby="adminPasswordModelLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="adminPasswordModelLabel">Admin Credentials</h5>
+          <button type="button" class="close close-admin-credentials-box" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="form-group">
+              <p>
+                <label for="txt-admin-username" class="col-form-label">Enter Admin UserName:</label>
+                <input type="text" class="form-control" id="txt-admin-username" value="username">
+              </p>
+
+              <p>
+                <label for="txt-admin-password" class="col-form-label">Enter Admin Password:</label>
+                <input type="password" class="form-control" id="txt-admin-password" value="password">
+              </p>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn close-admin-credentials-box" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="btn-validate-admin">Validate</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+ 
+
+
+  
+      <div id="rooms-list"></div>
+    
+
+  
+  <!-- <footer style="text-align: center;">RTCMultiConnection | Admin Page</footer> -->
+  
+
+  <script src="/admin/admin-ui.js"></script>
+  <!-- <script>
+    document.getElementById('join-room').onclick = function() {
+    disableInputButtons();
+
+    connection.sdpConstraints.mandatory = {
+        OfferToReceiveAudio: true,
+        OfferToReceiveVideo: true
+    };
+    connection.join(document.getElementById('room-id').value);
+};
+  </script> -->
+</body>
+</html>
+
